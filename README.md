@@ -1,4 +1,4 @@
-# 🎯 ATS Resume Scorer — AI-Powered Resume Feedback Tool
+# 🎯 ATS Resume Scorer - AI-Powered Resume Feedback Tool
 
 > **Full-stack GenAI web app** that scores how well your resume matches a job description and gives you category-by-category, LLM-powered improvement suggestions.
 
