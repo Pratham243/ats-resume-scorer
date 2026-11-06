@@ -1,3 +1,15 @@
+---
+title: ATS Resume Scorer
+emoji: 🎯
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: true
+license: mit
+short_description: AI-powered resume scoring — FastAPI + spaCy + Llama 3
+---
+
 # 🎯 AI Resume ATS Scorer & Optimizer
 
 > **Enterprise-grade, Multi-Agent Applicant Tracking System (ATS) and career alignment engine built with FastAPI, Streamlit, spaCy, Sentence-Transformers, Groq (Llama 3), Ollama (GDPR Local LLM), and Supabase.**
