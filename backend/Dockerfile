@@ -23,8 +23,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Pre-download spaCy NLP model to eliminate container startup latency
-RUN python -m spacy download en_core_web_md
+# Pre-download spaCy NLP models (both small and medium) to eliminate container startup latency
+RUN python -m spacy download en_core_web_sm && \
+    python -m spacy download en_core_web_md
 
 # Copy application backend codebase
 COPY backend/ ./backend/
