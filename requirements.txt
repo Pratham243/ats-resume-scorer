@@ -3,12 +3,14 @@
 # Install with:
 #     pip install -r requirements.txt
 #
-# After installing, download the spaCy model the backend uses at startup:
-#     python -m spacy download en_core_web_md
+# spaCy NLP models are installed below as direct wheel URLs so no
+# `python -m spacy download` step is required at deploy time
+# (Streamlit Cloud does not support post-install shell hooks).
 #
 # WeasyPrint (used for PDF export) also needs system libraries on Linux:
 #     sudo dnf install -y cairo pango gdk-pixbuf2 libffi    # Fedora
 #     sudo apt install -y libcairo2 libpango-1.0-0 libpangoft2-1.0-0 libffi-dev  # Debian/Ubuntu
+# These are listed in packages.txt for Streamlit Cloud.
 
 # ── Backend: web framework ──
 fastapi>=0.110
@@ -22,6 +24,10 @@ spacy>=3.7,<4.0
 sentence-transformers>=2.5
 numpy>=1.26
 rapidfuzz>=3.6
+
+# ── spaCy models (installed as pip wheels, cached as normal Python packages) ──
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
+https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
 
 # ── Backend: file parsing ──
 pdfplumber>=0.11
