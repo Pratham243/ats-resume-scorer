@@ -23,8 +23,20 @@ from pathlib import Path
 import streamlit as st
 
 ROOT_DIR = Path(__file__).resolve().parent
+BACKEND_LOG_PATH = "/tmp/ats_backend.log"
+
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
+
+
+def _tail_backend_log(lines: int = 80) -> str:
+    """Return the last `lines` of the backend subprocess log (for UI error display)."""
+    try:
+        with open(BACKEND_LOG_PATH, "r") as f:
+            content = f.read()
+        return "\n".join(content.splitlines()[-lines:])
+    except Exception as e:
+        return f"(could not read backend log: {e})"
 
 
 @st.cache_resource(show_spinner="⚙️  Warming up the ATS backend (first load takes ~60s)…")
@@ -34,8 +46,13 @@ def _launch_backend():
 
     Streamlit's cache_resource ensures this runs exactly once — subsequent
     script reruns reuse the live subprocess rather than spawning another.
+
+    Output is written to BOTH a file AND Streamlit's stdout so errors surface
+    in the Streamlit Cloud deploy logs (via `tee`-style duplication done in Python).
     """
-    backend_log = open("/tmp/ats_backend.log", "w")
+    # Open log file for subprocess output; also print to this process's stdout
+    # so Streamlit Cloud captures backend startup messages in its deploy logs.
+    backend_log = open(BACKEND_LOG_PATH, "w", buffering=1)  # line-buffered
     proc = subprocess.Popen(
         [
             sys.executable, "-m", "uvicorn",
@@ -46,13 +63,15 @@ def _launch_backend():
         ],
         cwd=str(ROOT_DIR),
         stdout=backend_log,
-        stderr=backend_log,
+        stderr=subprocess.STDOUT,
         env={**os.environ, "PYTHONUNBUFFERED": "1"},
     )
 
-    # Wait up to 120s for backend to finish loading spaCy + sentence-transformers.
+    # Wait up to 180s for backend to finish loading spaCy + sentence-transformers.
+    # First run downloads the sentence-transformers model (~90 MB) from HF Hub,
+    # which can take 30–60s; add a buffer on top for cold starts.
     import requests
-    deadline = time.time() + 120
+    deadline = time.time() + 180
     while time.time() < deadline:
         try:
             r = requests.get("http://127.0.0.1:8000/", timeout=1)
@@ -61,9 +80,18 @@ def _launch_backend():
         except Exception:
             pass
         if proc.poll() is not None:
-            return {"status": "crashed", "returncode": proc.returncode}
+            # Subprocess exited before serving — capture its log tail for UI.
+            return {
+                "status": "crashed",
+                "returncode": proc.returncode,
+                "log_tail": _tail_backend_log(80),
+            }
         time.sleep(1)
-    return {"status": "timeout", "pid": proc.pid}
+    return {
+        "status": "timeout",
+        "pid": proc.pid,
+        "log_tail": _tail_backend_log(80),
+    }
 
 
 # Ensure the frontend's api_client talks to our in-container backend.
@@ -74,14 +102,21 @@ _backend = _launch_backend()
 
 if _backend["status"] == "crashed":
     st.error(
-        f"Backend failed to start (exit code {_backend['returncode']}).\n\n"
-        "Check the deploy logs for details."
+        f"❌ FastAPI backend subprocess exited with code {_backend['returncode']} "
+        "before it could serve requests."
+    )
+    with st.expander("Backend log (last 80 lines)", expanded=True):
+        st.code(_backend.get("log_tail", "(no log)"), language="text")
+    st.info(
+        "Common causes: missing env var, OOM kill, or an import/startup error "
+        "in backend/main.py. Fix the root cause and push a new commit."
     )
     st.stop()
 elif _backend["status"] == "timeout":
-    st.warning(
-        "Backend is still warming up. Reload the page in ~30 seconds."
-    )
+    st.warning("⚠️ Backend did not become ready within 180 seconds.")
+    with st.expander("Backend log (last 80 lines)", expanded=True):
+        st.code(_backend.get("log_tail", "(no log)"), language="text")
+    st.info("Reload the page in ~30 seconds — if it keeps timing out, investigate the log above.")
     st.stop()
 
 # Hand off to the existing Streamlit UI.
