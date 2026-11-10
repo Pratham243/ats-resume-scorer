@@ -20,9 +20,13 @@ python-multipart>=0.0.9      # required by FastAPI for File/Form uploads
 python-dotenv>=1.0
 
 # ── Backend: NLP / ML ──
-spacy>=3.7,<4.0
-sentence-transformers>=2.5
-numpy>=1.26
+# numpy pinned <2.0: spaCy 3.7.x bundles thinc 8.2 which is NOT numpy-2
+# compatible — importing spacy crashes at startup with "binary incompatibility"
+# or "numpy.dtype size changed" errors. Pinning here forces a 1.x install
+# everywhere so the subprocess (and tests) agree.
+numpy>=1.26,<2.0
+spacy>=3.7,<3.8              # 3.7.x is the latest line that's stable with thinc 8.2
+sentence-transformers>=2.5,<3.0
 rapidfuzz>=3.6
 
 # ── spaCy models (installed as pip wheels, cached as normal Python packages) ──
