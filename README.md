@@ -14,6 +14,14 @@ short_description: AI-powered resume scoring — FastAPI + spaCy + Llama 3
 
 > **Enterprise-grade, Multi-Agent Applicant Tracking System (ATS) and career alignment engine built with FastAPI, Streamlit, spaCy, Sentence-Transformers, Groq (Llama 3), Ollama (GDPR Local LLM), and Supabase.**
 
+## 🔴 Live Demo
+
+### 🚀 [**Try it live: pratham243-ats-resume-scorer.streamlit.app**](https://pratham243-ats-resume-scorer.streamlit.app/)
+
+Upload your resume (PDF/DOCX) + a job description — get an ATS compatibility score, category-by-category breakdown, missing-skills analysis, and actionable Llama 3 feedback in <10 seconds.
+
+[![Live Demo](https://img.shields.io/badge/🔴%20Live%20Demo-pratham243--ats--resume--scorer.streamlit.app-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://pratham243-ats-resume-scorer.streamlit.app/)
+
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Frontend-FF4B4B?style=flat&logo=streamlit&logoColor=white)](https://streamlit.io)
